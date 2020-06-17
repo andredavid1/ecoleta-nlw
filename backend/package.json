@@ -7,7 +7,7 @@
   "author": "André David",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev src/server.ts"
+    "dev": "ts-node-dev --transpileOnly --ignore-watch node_modules src/server.ts"
   },
   "dependencies": {
     "@types/dotenv": "^8.2.0",
