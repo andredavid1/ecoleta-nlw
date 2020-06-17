@@ -1,5 +1,7 @@
 import knex from 'knex';
-require('dot-env').config();
+import * as dotEnv from 'dotenv';
+
+dotEnv.config();
 
 const connection = knex({
     client: 'mysql',
@@ -9,6 +11,7 @@ const connection = knex({
         database: process.env.DB_NAME,
         password: process.env.DB_PSW
     },
+    useNullAsDefault: true,
 });
 
 export default connection;

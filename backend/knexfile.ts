@@ -1,5 +1,7 @@
 import path from 'path';
-require('dot-env').config();
+import * as dotEnv from 'dotenv';
+
+dotEnv.config();
 
 module.exports = {
   client: 'mysql',
@@ -15,5 +17,6 @@ module.exports = {
   },
   seeds: {
     directory: path.resolve(__dirname, 'src', 'database', 'seeds')
-  }
+  },
+  useNullAsDefault: true,
 };
