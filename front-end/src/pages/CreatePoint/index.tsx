@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { Map, TileLayer, Marker } from 'react-leaflet';
+import axios from 'axios';
 import api from '../../services/api';
 
 import './styles.css';
@@ -14,14 +15,59 @@ interface Item {
     image_url: string;
 }
 
+interface IBGEUFResponse {
+    sigla: string;
+}
+
+interface IBGECityResponse {
+    nome: string;
+}
+
 const CreatePoint = () => {
     const [items, setItems] = useState<Item[]>([]);
+    const [ufs, setUfs] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
+
+    const [selectedUf, setSelectedUf] = useState("0");
+    const [selectedCity, setSelectedCity] = useState("0")
     
     useEffect(() => {
         api.get('items').then(response => {
             setItems(response.data);
         });
     }, []);
+
+    useEffect(() => {
+        axios.get<IBGEUFResponse[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome').then(response => {
+            const ufInitials = response.data.map(uf => uf.sigla)
+            setUfs(ufInitials);
+        });
+    }, []);
+
+    useEffect(() => {
+        if(selectedUf === '0') {
+            return;
+        }
+
+        axios
+            .get<IBGECityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios?orderBy=nome`)
+            .then(response => {
+            const cityNames = response.data.map(city => city.nome)
+            setCities(cityNames);
+        });
+    }, [selectedUf]);
+
+    function handleSelectedUf(event: ChangeEvent<HTMLSelectElement>) {
+        const uf =event.target.value;
+
+        setSelectedUf(uf);
+    }
+
+    function handleSelectedCity(event: ChangeEvent<HTMLSelectElement>) {
+        const city =event.target.value;
+
+        setSelectedCity(city);
+    }
 
     return (
         <div id="page-create-point">
@@ -93,8 +139,13 @@ const CreatePoint = () => {
                             <select
                                 name="uf"
                                 id="uf"
+                                value={selectedUf}
+                                onChange={handleSelectedUf}
                             >
                                 <option value="0">Selecione uma UF</option>
+                                {ufs.map(uf => (
+                                    <option key={uf} value={uf}>{uf}</option>
+                                ))}
                             </select>
                         </div>
                     
@@ -103,8 +154,13 @@ const CreatePoint = () => {
                             <select
                                 name="city"
                                 id="city"
+                                value={selectedCity}
+                                onChange={handleSelectedCity}
                             >
                                 <option value="0">Selecione uma cidade</option>
+                                {cities.map(city => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
